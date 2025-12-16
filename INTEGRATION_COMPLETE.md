@@ -121,12 +121,12 @@ The integration is **complete and follows OpenCode's official documentation**. N
 3. **Direct configuration**: Add to your `opencode.json`:
    ```json
    {
-     "models": {
-       "llm-user-managed/opencode-llm": {
-         "apiKey": "your-api-key-here",
-         "baseURL": "http://localhost:8000/v1"
-       }
-     }
+  "models": {
+    "llm-user-managed/mistralai/Devstral-2-123B-Instruct-2512": {
+      "apiKey": "your-api-key-here",
+      "baseURL": "http://localhost:8000/v1"
+    }
+  }
    }
    ```
 

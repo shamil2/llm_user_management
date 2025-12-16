@@ -72,10 +72,10 @@ Create or edit your OpenCode configuration file:
       "provider": "openai",
       "base_url": "http://localhost:8000/v1",
       "api_key": "your_api_key_from_registration",
-      "model": "llm-user-managed"
+        "model": "mistralai/Devstral-2-123B-Instruct-2512"
     }
   },
-  "default_model": "llm-user-managed"
+  "default_model": "mistralai/Devstral-2-123B-Instruct-2512"
 }
 ```
 
@@ -88,7 +88,7 @@ MODEL_CONFIGS = {
     "llm-user-managed": {
         "api_base": "http://localhost:8000/v1",
         "api_key": "your_api_key_from_registration",
-        "model_name": "llm-user-managed"
+        "model_name": "mistralai/Devstral-2-123B-Instruct-2512"
     }
 }
 ```
@@ -121,7 +121,7 @@ Once configured, you can use your model in OpenCode:
 
 ```
 # Set the model
-/model llm-user-managed
+/model mistralai/Devstral-2-123B-Instruct-2512
 
 # Or use it directly in conversations
 Hello, can you help me write a Python function?
@@ -205,13 +205,13 @@ You can set up multiple model providers:
       "provider": "openai",
       "base_url": "http://localhost:8000/v1",
       "api_key": "api_key_1",
-      "model": "llm-user-managed"
+        "model": "mistralai/Devstral-2-123B-Instruct-2512"
     },
     "llm-user-managed-claude": {
       "provider": "openai", 
       "base_url": "http://localhost:8000/v1",
       "api_key": "api_key_2",
-      "model": "llm-user-managed"
+        "model": "mistralai/Devstral-2-123B-Instruct-2512"
     }
   }
 }

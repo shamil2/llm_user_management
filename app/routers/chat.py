@@ -1,4 +1,5 @@
 import httpx
+import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -21,26 +22,38 @@ async def chat_completions(
         raise HTTPException(status_code=429, detail="Token limit exceeded")
 
     # Count tokens in request (simplified - in real implementation use tiktoken)
-    prompt = request.get("prompt", "")
-    token_count = len(prompt.split())  # rough estimate
+    if "messages" in request:
+        # Chat completions - count characters in messages
+        content = ""
+        for msg in request["messages"]:
+            content += msg.get("content", "")
+        token_count = len(content.split()) * 1.3  # Rough estimate for chat
+    else:
+        # Legacy completions
+        prompt = request.get("prompt", "")
+        token_count = len(prompt.split())  # rough estimate
 
     # Check if this request would exceed limit
     if current_user.tokens_used + token_count > current_user.token_limit:
         raise HTTPException(status_code=429, detail="Request would exceed token limit")
 
-    # Proxy to vLLM
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                f"{settings.vllm_endpoint}/v1/completions", json=request, timeout=60.0
-            )
-            response.raise_for_status()
-            result = response.json()
+    # Proxy to vLLM - use the same endpoint that was called
+    endpoint = "/v1/chat/completions"  # Default to chat completions
 
-            # Update token usage
-            current_user.tokens_used += token_count
-            db.commit()
+    # Use requests for now to debug connection issues
+    try:
+        response = requests.post(
+            f"{settings.vllm_endpoint}{endpoint}",
+            json=request,
+            timeout=30.0
+        )
+        response.raise_for_status()
+        result = response.json()
 
-            return result
-        except httpx.RequestError as e:
-            raise HTTPException(status_code=502, detail=f"vLLM service error: {str(e)}")
+        # Update token usage
+        current_user.tokens_used += token_count
+        db.commit()
+
+        return result
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"vLLM service error: {str(e)}")

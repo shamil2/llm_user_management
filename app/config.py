@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     jwt_expiration_hours: int = 24
 
     # vLLM
-    vllm_endpoint: str = "http://localhost:8001"
+    vllm_endpoint: str = "http://127.0.0.1:8080"
 
     # CORS
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]

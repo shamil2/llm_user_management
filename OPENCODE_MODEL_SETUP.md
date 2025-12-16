@@ -40,7 +40,7 @@ curl -X POST http://localhost:8002/v1/chat/completions \
   -H "Authorization: Bearer 6AKHFK3uQw3Z2LzkC0uXSE2C5k_wnnJuEyvI4ul0wMc" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "opencode-llm",
+    "model": "mistralai/Devstral-2-123B-Instruct-2512",
     "messages": [{"role": "user", "content": "Hello!"}],
     "max_tokens": 10
   }'
@@ -64,8 +64,8 @@ Create or edit your `opencode.json` configuration file:
         "baseURL": "http://localhost:8002/v1"
       },
       "models": {
-        "opencode-llm": {
-          "name": "Managed LLM API"
+        "mistralai/Devstral-2-123B-Instruct-2512": {
+          "name": "Devstral 2 123B Instruct"
         }
       }
     }
@@ -92,7 +92,7 @@ Select your model in OpenCode:
 # In OpenCode TUI
 /models
 
-# Select: llm-user-managed/opencode-llm
+# Select: llm-user-managed/mistralai/Devstral-2-123B-Instruct-2512
 ```
 
 ## Features
