@@ -4,12 +4,14 @@ Manual user registration script for testing OpenAI-compatible endpoints
 """
 
 import sys
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.models.user import User, Base
-from app.utils.auth import get_password_hash, generate_api_key
 from app.config import settings
+from app.models.user import Base, User
+from app.utils.auth import generate_api_key, get_password_hash
+
 
 def create_user():
     """Create a test user with API key"""
@@ -38,7 +40,7 @@ def create_user():
             hashed_password=hashed_password,
             api_key=api_key,
             token_limit=50000,
-            tokens_used=0
+            tokens_used=0,
         )
 
         db.add(new_user)
@@ -56,6 +58,7 @@ def create_user():
         db.rollback()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     create_user()
