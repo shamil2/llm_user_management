@@ -28,7 +28,7 @@ cp .env.example .env
 # Edit .env with your settings
 
 # Create database
-python scripts/create_tables.py
+PYTHONPATH=. python scripts/create_tables.py
 
 # Start the server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

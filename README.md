@@ -31,7 +31,8 @@ cp .env.example .env
 
 4. Create database tables:
 ```bash
-python scripts/create_tables.py
+PYTHONPATH=. python scripts/create_tables.py
+# Or with python3: PYTHONPATH=. python3 scripts/create_tables.py
 ```
 
 4. Start the OpenAI-compatible API server:

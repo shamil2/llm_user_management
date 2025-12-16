@@ -19,7 +19,7 @@ cp .env.example .env
 # Edit .env to set your VLLM_ENDPOINT
 
 # Create database tables
-python scripts/create_tables.py
+PYTHONPATH=. python scripts/create_tables.py
 
 # Start the API server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

@@ -34,6 +34,7 @@ def check_api_server():
         print("   python3 -m venv venv")
         print("   source venv/bin/activate")
         print("   pip install -r requirements.txt")
+        print("   PYTHONPATH=. python scripts/create_tables.py")
         print("   uvicorn app.main:app --host 0.0.0.0 --port 8000")
         return False
 

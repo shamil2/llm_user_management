@@ -26,7 +26,7 @@ Thank you for your interest in contributing to the LLM User Management API! This
 
 3. **Create database**
    ```bash
-   python scripts/create_tables.py
+    PYTHONPATH=. python scripts/create_tables.py
    ```
 
 4. **Run tests**
