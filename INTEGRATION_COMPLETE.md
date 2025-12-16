@@ -8,7 +8,7 @@ Your LLM User Management API is now fully integrated with OpenCode using the **c
 
 Based on OpenCode's official documentation, the correct integration approach is:
 
-1. **OpenAI-Compatible API Server** - Your Flask server provides OpenAI-compatible endpoints
+1. **OpenAI-Compatible API Server** - Your FastAPI server provides OpenAI-compatible endpoints
 2. **Custom Provider Configuration** - Configure OpenCode to use your API as a custom provider
 3. **API Key Authentication** - Use OpenCode's credential system
 
@@ -16,8 +16,22 @@ Based on OpenCode's official documentation, the correct integration approach is:
 
 1. **Start the API server:**
 ```bash
-pip install flask
-python opencode_provider_flask.py
+# Set up Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Create database
+python scripts/create_tables.py
+
+# Start the server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 2. **Configure OpenCode** - Add to `opencode.json`:
@@ -29,7 +43,7 @@ python opencode_provider_flask.py
       "npm": "@ai-sdk/openai-compatible",
       "name": "LLM User Management API",
       "options": {
-        "baseURL": "http://localhost:8002/v1"
+        "baseURL": "http://localhost:8000/v1"
       },
       "models": {
         "opencode-llm": {

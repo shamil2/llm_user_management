@@ -13,17 +13,23 @@ A FastAPI application that provides authenticated access to vLLM instances with 
 
 ## Quick Start
 
-1. Install dependencies:
+1. Set up Python virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Copy environment configuration:
+3. Copy environment configuration:
 ```bash
 cp .env.example .env
 ```
 
-3. Create database tables:
+4. Create database tables:
 ```bash
 python scripts/create_tables.py
 ```

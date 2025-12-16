@@ -9,11 +9,25 @@ This guide shows how to configure OpenCode to use your LLM User Management API a
 First, ensure your API is running with the OpenAI-compatible endpoints:
 
 ```bash
+# Set up Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your VLLM_ENDPOINT and other settings
+
+# Create database tables
+python scripts/create_tables.py
+
+# Create a test user (optional)
+python scripts/create_test_user.py
+
 # Start the API server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Run database migration for API keys
-python scripts/migrate_add_api_key.py
 ```
 
 ### 2. Register a User and Get API Key

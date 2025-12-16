@@ -4,23 +4,30 @@ Follow these steps to integrate your LLM API as a model provider in OpenCode usi
 
 ## Step 1: Set Up the OpenAI-Compatible API Server
 
-Start the Flask-based OpenAI-compatible API server:
+Start the FastAPI-based OpenAI-compatible API server:
 
 ```bash
-# Install Flask if needed
-pip install flask
+# Set up Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Set environment variables
-export VLLM_ENDPOINT="http://localhost:8001/v1"  # Your vLLM endpoint
-export API_KEY="6AKHFK3uQw3Z2LzkC0uXSE2C5k_wnnJuEyvI4ul0wMc"  # Pre-configured test key
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment configuration
+cp .env.example .env
+# Edit .env to set your VLLM_ENDPOINT
+
+# Create database tables
+python scripts/create_tables.py
 
 # Start the API server
-python opencode_provider_flask.py
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The API will be available at `http://localhost:8002`
+The API will be available at `http://localhost:8000`
 
-The provider will run on `http://localhost:8002`
+The OpenAI-compatible endpoints will be available at `http://localhost:8000/v1/`
 
 ## Step 2: Test the Provider
 
