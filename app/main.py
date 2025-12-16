@@ -4,12 +4,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import (auth_router, chat_router, openai_compatible_router,
                          users_router)
+from app.middleware.api_call_tracker import ApiCallTrackerMiddleware
 
 app = FastAPI(
     title="LLM User Management API",
     description="API proxy for vLLM with user authentication and token usage tracking",
     version="1.0.0",
 )
+
+# API Call Tracking Middleware (must be first)
+app.add_middleware(ApiCallTrackerMiddleware)
 
 # CORS middleware
 app.add_middleware(
