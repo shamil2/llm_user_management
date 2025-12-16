@@ -132,6 +132,7 @@ See `.env.example` for required configuration.
 - Linting: `flake8 app/ && black app/ && isort app/`
 - Start API server: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 - Test OpenCode integration: `python test_opencode_integration.py`
+- Debug ProviderInitError: `python debug_opencode_provider.py`
 
 ## OpenCode Integration
 
@@ -153,11 +154,30 @@ This will check your API compatibility and provide the exact OpenCode configurat
 
 ### Troubleshooting
 
-If you can't find the `/connect` command in OpenCode, try:
+#### "Cannot find `/connect` command"
+
+If you can't find the `/connect` command in OpenCode:
 
 1. **Check available commands**: `/help` or `/commands`
 2. **Alternative commands**: `/credentials`, `/providers`, or `/config`
 3. **Direct configuration**: Edit `opencode.json` manually
 4. **Environment variables**: Set `OPENAI_API_KEY` and `OPENAI_BASE_URL`
+
+#### "ProviderInitError"
+
+If you get a `ProviderInitError`:
+
+1. **Run the debug script**: `python debug_opencode_provider.py`
+2. **Check API server**: Ensure it's running on port 8000
+3. **Verify configuration**: Use the correct API key and baseURL
+4. **Check firewall**: Ensure OpenCode can access localhost:8000
+5. **Restart OpenCode**: After configuration changes
+
+**Common causes:**
+- API server not running
+- Wrong port (8000 vs 8002)
+- Invalid API key
+- Incorrect baseURL format
+- Configuration file in wrong location
 
 See the troubleshooting section in [INTEGRATION_COMPLETE.md](INTEGRATION_COMPLETE.md) for detailed solutions.
