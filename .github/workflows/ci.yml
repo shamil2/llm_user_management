@@ -91,7 +91,7 @@ jobs:
         flake8 app/ tests/ scripts/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
         echo "🔍 Running mypy type checking..."
-        mypy app/ --ignore-missing-imports
+        mypy app/ --ignore-missing-imports --explicit-package-bases
 
   security:
     runs-on: ubuntu-latest
