@@ -62,6 +62,11 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 # API key: 6AKHFK3uQw3Z2LzkC0uXSE2C5k_wnnJuEyvI4ul0wMc
 ```
 
+**If `/connect` is not available, try:**
+- `/credentials` or `/providers`
+- Direct configuration in `opencode.json`
+- Environment variables: `OPENAI_API_KEY` and `OPENAI_BASE_URL`
+
 4. **Use the model:**
 ```bash
 /models
@@ -90,5 +95,87 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - API key authentication system
 - Token usage tracking
 
-The integration is **complete and follows OpenCode's official documentation**. No MCP servers or complex tooling needed! 🎉</content>
+The integration is **complete and follows OpenCode's official documentation**. No MCP servers or complex tooling needed! 🎉
+
+## 🔧 Troubleshooting
+
+### "/connect command not found"
+
+**Problem**: The `/connect` command is not available in your OpenCode version.
+
+**Solutions**:
+
+1. **Check available commands**:
+   ```bash
+   /help
+   /commands
+   ```
+
+2. **Try alternative commands**:
+   ```bash
+   /credentials
+   /providers
+   /config
+   ```
+
+3. **Direct configuration**: Add to your `opencode.json`:
+   ```json
+   {
+     "models": {
+       "llm-user-managed/opencode-llm": {
+         "apiKey": "your-api-key-here",
+         "baseURL": "http://localhost:8000/v1"
+       }
+     }
+   }
+   ```
+
+4. **Environment variables**:
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   export OPENAI_BASE_URL="http://localhost:8000/v1"
+   ```
+
+5. **Check OpenCode version**:
+   ```bash
+   opencode --version
+   # Update if using an older version
+   ```
+
+### "Model not appearing"
+
+**Problem**: The model doesn't show up in `/models`.
+
+**Solutions**:
+- Ensure the API server is running on port 8000
+- Check that the model configuration matches exactly
+- Restart OpenCode after configuration changes
+- Verify the API key is correct
+
+### "Connection refused"
+
+**Problem**: Cannot connect to the API server.
+
+**Solutions**:
+- Verify the server is running: `curl http://localhost:8000/`
+- Check firewall settings
+- Ensure port 8000 is not blocked
+- Try different host binding: `--host 0.0.0.0`
+
+### Getting Your API Key
+
+If you need to generate a new API key:
+
+```bash
+# Register a new user
+curl -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "opencode_user", "password": "secure_password", "token_limit": 50000}'
+
+# Login to get JWT token
+curl -X POST http://localhost:8000/auth/token \
+  -d "username=opencode_user&password=secure_password"
+
+# The API key will be in the registration response
+```</content>
 <parameter name="filePath">INTEGRATION_COMPLETE.md

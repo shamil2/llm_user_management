@@ -130,4 +130,34 @@ See `.env.example` for required configuration.
 - Run tests: `pytest tests/ -v`
 - Type checking: `mypy app/ --ignore-missing-imports`
 - Linting: `flake8 app/ && black app/ && isort app/`
-- Start API server: `python opencode_provider_flask.py`
+- Start API server: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+- Test OpenCode integration: `python test_opencode_integration.py`
+
+## OpenCode Integration
+
+This API is designed to work seamlessly with OpenCode. See the integration guides:
+
+- [Complete Integration Guide](INTEGRATION_COMPLETE.md)
+- [Detailed Setup Guide](OPENCODE_MODEL_SETUP.md)
+- [Configuration Reference](OPENCODE_MODEL_INTEGRATION.md)
+
+### Quick Test
+
+Run the integration test to verify everything is working:
+
+```bash
+python test_opencode_integration.py
+```
+
+This will check your API compatibility and provide the exact OpenCode configuration needed.
+
+### Troubleshooting
+
+If you can't find the `/connect` command in OpenCode, try:
+
+1. **Check available commands**: `/help` or `/commands`
+2. **Alternative commands**: `/credentials`, `/providers`, or `/config`
+3. **Direct configuration**: Edit `opencode.json` manually
+4. **Environment variables**: Set `OPENAI_API_KEY` and `OPENAI_BASE_URL`
+
+See the troubleshooting section in [INTEGRATION_COMPLETE.md](INTEGRATION_COMPLETE.md) for detailed solutions.
