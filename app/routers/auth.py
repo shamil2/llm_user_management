@@ -9,8 +9,12 @@ from app.config import settings
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.models.user import User
-from app.utils.auth import (authenticate_user, create_access_token,
-                            generate_api_key, get_password_hash)
+from app.utils.security import (
+    authenticate_user,
+    create_access_token,
+    generate_api_key,
+    get_password_hash,
+)
 
 router = APIRouter()
 

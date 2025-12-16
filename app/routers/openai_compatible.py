@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.dependencies.database import get_db
 from app.models.user import User
-from app.utils.auth import verify_api_key
+from app.utils.security import verify_api_key
 
 router = APIRouter()
 

@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 from app.models.user import Base, User
-from app.utils.auth import generate_api_key, get_password_hash
+from app.utils.security import generate_api_key, get_password_hash
 
 
 def create_user():
