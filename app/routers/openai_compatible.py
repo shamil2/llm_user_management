@@ -175,33 +175,41 @@ async def completions_openai(
 
 @router.get("/v1/models")
 async def list_models():
-    """OpenAI-compatible models endpoint"""
-    return {
-        "object": "list",
-        "data": [
-            {
-                "id": "llm-user-managed",
-                "object": "model",
-                "created": 1677610602,
-                "owned_by": "llm-user-management",
-                "permission": [
-                    {
-                        "id": "modelperm-mock",
-                        "object": "model_permission",
-                        "created": 1677610602,
-                        "allow_create_engine": False,
-                        "allow_sampling": True,
-                        "allow_logprobs": True,
-                        "allow_search_indices": False,
-                        "allow_view": True,
-                        "allow_fine_tuning": False,
-                        "organization": "*",
-                        "group": None,
-                        "is_blocking": False,
-                    }
-                ],
-                "root": "llm-user-managed",
-                "parent": None,
-            }
-        ],
-    }
+    """OpenAI-compatible models endpoint - proxies to vLLM"""
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(f"{settings.vllm_endpoint}/v1/models")
+            response.raise_for_status()
+            return response.json()
+    except httpx.RequestError as e:
+        # If vLLM is not available, return a fallback response matching vLLM format
+        return {
+            "object": "list",
+            "data": [
+                {
+                    "id": "mistralai/Devstral-2-123B-Instruct-2512",
+                    "object": "model",
+                    "created": 1765900623,
+                    "owned_by": "vllm",
+                    "root": "mistralai/Devstral-2-123B-Instruct-2512",
+                    "parent": None,
+                    "max_model_len": 262144,
+                    "permission": [
+                        {
+                            "id": "modelperm-a0229203fcd27c57",
+                            "object": "model_permission",
+                            "created": 1765900623,
+                            "allow_create_engine": False,
+                            "allow_sampling": True,
+                            "allow_logprobs": True,
+                            "allow_search_indices": False,
+                            "allow_view": True,
+                            "allow_fine_tuning": False,
+                            "organization": "*",
+                            "group": None,
+                            "is_blocking": False
+                        }
+                    ]
+                }
+            ]
+        }
