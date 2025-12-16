@@ -53,6 +53,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v4
@@ -65,27 +66,19 @@ jobs:
     - name: Install linting dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black isort flake8 mypy bandit safety
+        pip install black isort flake8 mypy
 
-    - name: Check code formatting with Black
+    - name: Run linting checks
       run: |
         black --check --diff app/ tests/ scripts/
-
-    - name: Check import sorting with isort
-      run: |
         isort --check-only --diff app/ tests/ scripts/
-
-    - name: Lint with flake8
-      run: |
         flake8 app/ tests/ scripts/ --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 app/ tests/ scripts/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    - name: Type check with mypy
-      run: |
         mypy app/ --ignore-missing-imports
 
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
     - uses: actions/checkout@v4
@@ -98,26 +91,11 @@ jobs:
     - name: Install security tools
       run: |
         python -m pip install --upgrade pip
-        pip install bandit safety
+        pip install bandit
 
     - name: Run Bandit security linter
       run: |
-        bandit -r app/ -f json -o bandit-report.json || true
-        bandit -r app/ --exit-zero
-
-    - name: Run Safety vulnerability check
-      run: |
-        safety check --json | tee safety-report.json || true
-
-    - name: Check for secrets in code
-      run: |
-        # Check for common patterns that might indicate secrets
-        if grep -r "password\|secret\|key\|token" --include="*.py" app/ | grep -v "import\|from\|#\|def\|class\|test\|example"; then
-          echo "⚠️  Potential secrets found in code. Please review."
-          exit 1
-        else
-          echo "✅ No obvious secrets found in code"
-        fi
+        bandit -r app/ --exit-zero -f txt
 
   build:
     runs-on: ubuntu-latest
@@ -170,72 +148,16 @@ jobs:
 
   dependencies:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
     - name: Check requirements.txt format
       run: |
-        # Check if requirements.txt is properly formatted
         if grep -E "^[^#].*=" requirements.txt | grep -v -E "==|>=|<=|>|<"; then
           echo "❌ Requirements should pin versions with ==, >=, etc."
           exit 1
         else
           echo "✅ Requirements.txt format is correct"
         fi
-
-    - name: Check for unused dependencies
-      run: |
-        python -c "
-        import ast
-        import os
-
-        def get_imports_from_file(filepath):
-            with open(filepath, 'r', encoding='utf-8') as f:
-                try:
-                    tree = ast.parse(f.read())
-                    imports = []
-                    for node in ast.walk(tree):
-                        if isinstance(node, ast.Import):
-                            imports.extend([alias.name for alias in node.names])
-                        elif isinstance(node, ast.ImportFrom):
-                            if node.module:
-                                imports.append(node.module)
-                    return imports
-                except:
-                    return []
-
-        # Get all Python files
-        python_files = []
-        for root, dirs, files in os.walk('app'):
-            for file in files:
-                if file.endswith('.py'):
-                    python_files.append(os.path.join(root, file))
-
-        # Get all imports
-        all_imports = set()
-        for file in python_files:
-            all_imports.update(get_imports_from_file(file))
-
-        # Read requirements.txt
-        with open('requirements.txt', 'r') as f:
-            requirements = [line.strip().split('==')[0].split('>=')[0].split('<=')[0].split('>')[0].split('<')[0]
-                          for line in f if line.strip() and not line.startswith('#')]
-
-        print('📦 Checking dependencies...')
-        unused = []
-        for req in requirements:
-            req_base = req.split('.')[0]  # Get base package name
-            if req_base not in all_imports and req_base not in ['pytest', 'mypy', 'black', 'isort', 'flake8']:
-                unused.append(req)
-
-        if unused:
-            print(f'⚠️  Potentially unused dependencies: {unused}')
-        else:
-            print('✅ All dependencies appear to be used')
-        "

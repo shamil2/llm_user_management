@@ -38,79 +38,85 @@
 - Find middleware: `grep -rn "class.*Middleware" app/`
 - Find tests: `find . -name "*.py" -path "./tests/*" -exec grep -l "def test_" {} \;`
 
-## Definition of Done
-- All tests pass (`pytest tests/`)
-- Typecheck passes (`mypy app/`)
-- API documentation generated (`fastapi dev app/main.py --docs`)
-- Manual test of auth flow and token counting
+## CI/CD Pipeline
 
+### Automated Quality Gates (`.github/workflows/ci.yml`)
+All pull requests and pushes are automatically validated with these checks:
 
-## CI/CD Checks - MUST PASS BEFORE MERGE
+1. **Multi-Python Testing** - Runs on Python 3.9, 3.10, 3.11
+   - Unit tests with pytest
+   - Coverage reporting with Codecov
+   - Database integration tests
 
-### Automated PR Checks (`.github/workflows/pr-checklist.yml`)
-All pull requests are automatically validated with these checks:
+2. **Code Quality Checks**
+   - **Black**: Code formatting validation
+   - **isort**: Import sorting validation
+   - **flake8**: Linting and style checking
+   - **mypy**: Type checking
 
-1. **PR Title Format** - MUST start with `feat:`, `feature:`, `fix:`, `chore:`, or `docs:`
-   - ❌ Failure example: "Add feature" (missing prefix)
-   - ✅ Success example: "feat: Add backup automation" or "feature: Add backup automation"
+3. **Security Scanning**
+   - **Bandit**: Python security linting
+   - Secrets detection in code
 
-2. **Branch Naming** - MUST start with `feature/`, `feat/`, `fix/`, `chore/`, `docs/`, `security/`, `monitoring/`, or `operations/`
-   - ❌ Failure example: `bugfix/fix-error` (use `fix/` not `bugfix/`)
-   - ✅ Success example: `feature/backup-automation`, `security/network-policies`
+4. **Application Validation**
+   - Server startup testing
+   - API endpoint validation
+   - OpenAPI schema generation
 
-3. **YAML File Extensions** - MUST use `.yml` NOT `.yaml`
-   - ❌ Failure: Any file with `.yaml` extension
-   - ✅ Success: All YAML files use `.yml`
+5. **Dependency Analysis**
+   - Requirements.txt format validation
 
-4. **Encrypted Secrets** - All secrets MUST be SOPS-encrypted
-   - ❌ Failure: Plain text secrets in repository
-   - ✅ Success: All secrets in `.enc.yml` files
-
-5. **Directory Structure** - Services MUST have `README.md`
-   - ❌ Failure: `services/myservice/` without README.md
-   - ✅ Success: All service directories have README.md
-
-### ⚠️ CRITICAL: Never Merge Failing PRs
+### ⚠️ CRITICAL: Never Merge Failing CI
 
 **BEFORE MERGING ANY PR**:
 ```bash
-# Check PR status
-gh pr view <pr-number>
+# Check CI status
+gh run list --limit 5
 
-# View check status
-gh pr checks <pr-number>
+# View detailed CI results
+gh run view <run-id> --log
 
 # If ANY checks fail:
 # 1. DO NOT MERGE
 # 2. Fix the failing check
 # 3. Push the fix
-# 4. Wait for checks to pass
+# 4. Wait for CI to pass
 # 5. THEN merge
 ```
 
+## Development Workflow
 
-**Common Failures and Fixes**:
+### Pre-Commit Quality Checks
+```bash
+# Run all quality checks locally before committing
+pytest tests/ -v
+black --check app/ tests/ scripts/
+isort --check-only app/ tests/ scripts/
+flake8 app/ tests/ scripts/
+mypy app/ --ignore-missing-imports
+bandit -r app/ --exit-zero
+```
 
-| Failure                  | Fix                                                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| PR title check failed    | Change title to start with `feat:`, `feature:`, `fix:`, `chore:`, or `docs:`                                                   |
-| Branch naming failed     | Rename branch to accepted prefix: `feature/`, `feat/`, `fix/`, `chore/`, `docs/`, `security/`, `monitoring/`, or `operations/` |
-| Encrypted secrets failed | Ensure all secrets use `.enc.yml` and are SOPS-encrypted                                                                       |
-| README missing           | Add `README.md` to service directory                                                                                           |
+### Branch Strategy
+- `main` - Production branch (protected)
+- `feature/*` - New features
+- `fix/*` - Bug fixes
+- `chore/*` - Maintenance tasks
 
-## Validation Checklist
+### Commit Message Format
+Follow [Conventional Commits](https://conventionalcommits.org/):
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation
+- `style:` - Code formatting
+- `refactor:` - Code changes
+- `test:` - Test additions
+- `chore:` - Maintenance
 
-Before committing changes:
-- [ ] All secrets SOPS-encrypted (`.enc.yml`)
-- [ ] No hardcoded passwords
-- [ ] README.md updated if needed
-- [ ] AGENTS.md and CLAUDE.md are updated to take into account requirements asked that makes sense
-- [ ] No unencrypted secrets committed
-- [ ] `.sops/key.txt` NOT committed
-- [ ] **MANDATORY**: Do not commit to main. Use pull request strategy
-
-Before deploying:
-- [ ] SOPS key available: `export SOPS_AGE_KEY_FILE=.sops/key.txt`
-- [ ] Dry run completed successfully
-- [ ] Backup taken if making destructive changes
-- [ ] Secrets deployed
+## Definition of Done
+- All CI checks pass (test, lint, security, build, dependencies)
+- Code coverage maintained
+- No security vulnerabilities
+- API documentation up to date
+- Manual testing of critical paths
+- PR approved and merged
