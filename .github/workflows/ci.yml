@@ -37,7 +37,7 @@ jobs:
 
     - name: Run database migrations
       run: |
-        python scripts/create_tables.py
+        PYTHONPATH=. python scripts/create_tables.py
 
     - name: Run tests with coverage
       run: |
@@ -115,11 +115,11 @@ jobs:
 
     - name: Create database for build test
       run: |
-        python scripts/create_tables.py
+        PYTHONPATH=. python scripts/create_tables.py
 
     - name: Test application startup
       run: |
-        timeout 10s uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+        PYTHONPATH=. timeout 10s uvicorn app.main:app --host 127.0.0.1 --port 8000 &
         sleep 5
         if curl -f http://127.0.0.1:8000/ > /dev/null 2>&1; then
           echo "✅ Application started successfully"
@@ -131,7 +131,7 @@ jobs:
 
     - name: Test OpenAPI schema generation
       run: |
-        python -c "
+        PYTHONPATH=. python -c "
         from app.main import app
         from fastapi.openapi.utils import get_openapi
         schema = get_openapi(
