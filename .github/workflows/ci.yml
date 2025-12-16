@@ -1,0 +1,241 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-cov
+
+    - name: Run database migrations
+      run: |
+        python scripts/create_tables.py
+
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install linting dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy bandit safety
+
+    - name: Check code formatting with Black
+      run: |
+        black --check --diff app/ tests/ scripts/
+
+    - name: Check import sorting with isort
+      run: |
+        isort --check-only --diff app/ tests/ scripts/
+
+    - name: Lint with flake8
+      run: |
+        flake8 app/ tests/ scripts/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 app/ tests/ scripts/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Type check with mypy
+      run: |
+        mypy app/ --ignore-missing-imports
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+
+    - name: Run Bandit security linter
+      run: |
+        bandit -r app/ -f json -o bandit-report.json || true
+        bandit -r app/ --exit-zero
+
+    - name: Run Safety vulnerability check
+      run: |
+        safety check --json | tee safety-report.json || true
+
+    - name: Check for secrets in code
+      run: |
+        # Check for common patterns that might indicate secrets
+        if grep -r "password\|secret\|key\|token" --include="*.py" app/ | grep -v "import\|from\|#\|def\|class\|test\|example"; then
+          echo "⚠️  Potential secrets found in code. Please review."
+          exit 1
+        else
+          echo "✅ No obvious secrets found in code"
+        fi
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Create database for build test
+      run: |
+        python scripts/create_tables.py
+
+    - name: Test application startup
+      run: |
+        timeout 10s uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+        sleep 5
+        if curl -f http://127.0.0.1:8000/ > /dev/null 2>&1; then
+          echo "✅ Application started successfully"
+        else
+          echo "❌ Application failed to start"
+          exit 1
+        fi
+        pkill -f uvicorn || true
+
+    - name: Test OpenAPI schema generation
+      run: |
+        python -c "
+        from app.main import app
+        from fastapi.openapi.utils import get_openapi
+        schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            openapi_version=app.openapi_version,
+            description=app.description,
+            routes=app.routes,
+        )
+        print('✅ OpenAPI schema generated successfully')
+        assert 'paths' in schema
+        assert len(schema['paths']) > 0
+        "
+
+  dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Check requirements.txt format
+      run: |
+        # Check if requirements.txt is properly formatted
+        if grep -E "^[^#].*=" requirements.txt | grep -v -E "==|>=|<=|>|<"; then
+          echo "❌ Requirements should pin versions with ==, >=, etc."
+          exit 1
+        else
+          echo "✅ Requirements.txt format is correct"
+        fi
+
+    - name: Check for unused dependencies
+      run: |
+        python -c "
+        import ast
+        import os
+
+        def get_imports_from_file(filepath):
+            with open(filepath, 'r', encoding='utf-8') as f:
+                try:
+                    tree = ast.parse(f.read())
+                    imports = []
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.Import):
+                            imports.extend([alias.name for alias in node.names])
+                        elif isinstance(node, ast.ImportFrom):
+                            if node.module:
+                                imports.append(node.module)
+                    return imports
+                except:
+                    return []
+
+        # Get all Python files
+        python_files = []
+        for root, dirs, files in os.walk('app'):
+            for file in files:
+                if file.endswith('.py'):
+                    python_files.append(os.path.join(root, file))
+
+        # Get all imports
+        all_imports = set()
+        for file in python_files:
+            all_imports.update(get_imports_from_file(file))
+
+        # Read requirements.txt
+        with open('requirements.txt', 'r') as f:
+            requirements = [line.strip().split('==')[0].split('>=')[0].split('<=')[0].split('>')[0].split('<')[0]
+                          for line in f if line.strip() and not line.startswith('#')]
+
+        print('📦 Checking dependencies...')
+        unused = []
+        for req in requirements:
+            req_base = req.split('.')[0]  # Get base package name
+            if req_base not in all_imports and req_base not in ['pytest', 'mypy', 'black', 'isort', 'flake8']:
+                unused.append(req)
+
+        if unused:
+            print(f'⚠️  Potentially unused dependencies: {unused}')
+        else:
+            print('✅ All dependencies appear to be used')
+        "

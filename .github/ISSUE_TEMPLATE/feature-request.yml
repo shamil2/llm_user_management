@@ -1,0 +1,49 @@
+---
+name: Feature Request
+about: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "triage"]
+assignees: []
+
+body:
+- type: textarea
+  attributes:
+    label: Feature Summary
+    description: A brief description of the feature you'd like to see.
+    placeholder: "I'd like to be able to..."
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Problem/Use Case
+    description: Describe the problem this feature would solve or the use case it would enable.
+    placeholder: "Currently, when I..., I have to... It would be better if..."
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Proposed Solution
+    description: Describe your proposed solution or implementation approach.
+    placeholder: "I think we could... This would involve..."
+
+- type: textarea
+  attributes:
+    label: Alternative Solutions
+    description: Describe any alternative solutions or features you've considered.
+    placeholder: "I also considered... but that wouldn't work because..."
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: Add any other context, screenshots, or examples that might help.
+    placeholder: "Here's a mockup of what it might look like..."
+
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: By submitting this issue, you agree to follow our Code of Conduct.
+    options:
+    - label: I agree to follow this project's Code of Conduct
+      required: true

@@ -1,0 +1,59 @@
+---
+name: Bug Report
+about: Report a bug or issue
+title: "[BUG] "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+- type: textarea
+  attributes:
+    label: Describe the Bug
+    description: A clear and concise description of what the bug is.
+    placeholder: "When I do X, Y happens instead of Z..."
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to Reproduce
+    description: Steps to reproduce the behavior.
+    placeholder: |
+      1. Go to '...'
+      2. Click on '....'
+      3. Scroll down to '....'
+      4. See error
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A clear and concise description of what you expected to happen.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Environment
+    description: Please provide details about your environment.
+    value: |
+      - OS: [e.g., macOS, Linux, Windows]
+      - Python Version: [e.g., 3.9, 3.10, 3.11]
+      - FastAPI Version: [e.g., 0.104.1]
+      - Database: [e.g., SQLite]
+      - vLLM Version (if applicable): [e.g., N/A]
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: Add any other context about the problem here.
+    placeholder: "Screenshots, logs, or other relevant information..."
+
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: By submitting this issue, you agree to follow our Code of Conduct.
+    options:
+    - label: I agree to follow this project's Code of Conduct
+      required: true
