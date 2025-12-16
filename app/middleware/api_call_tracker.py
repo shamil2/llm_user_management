@@ -184,7 +184,7 @@ class ApiCallTrackerMiddleware:
 
             # Create API call record
             if user_id:
-                db: Session = next(get_db())
+                db_session: Session = next(get_db())
                 try:
                     api_call = ApiCall(
                         user_id=user_id,
@@ -198,20 +198,20 @@ class ApiCallTrackerMiddleware:
                         estimated_cost=estimated_cost
                     )
 
-                    db.add(api_call)
+                    db_session.add(api_call)
 
                     # Update user's total token usage
-                    user = db.query(User).filter(User.id == user_id).first()
+                    user = db_session.query(User).filter(User.id == user_id).first()
                     if user:
                         user.tokens_used += tokens_used
 
-                    db.commit()
+                    db_session.commit()
 
                 except Exception as e:
                     print(f"Error logging API call: {e}")
-                    db.rollback()
+                    db_session.rollback()
                 finally:
-                    db.close()
+                    db_session.close()
 
         except Exception as e:
             # Don't let logging errors break the API
